@@ -27,6 +27,8 @@ services:
       command: ['/usr/bin/dumb-init', '{{ DJANGO_VENV }}/bin/python', 'manage.py', 'runserver', '0.0.0.0:{{ DJANGO_PORT }}']
       volumes:
         - "$PWD:{{ DJANGO_ROOT }}"
+      depends_on:
+        - postgresql
     options:
       kube:
         runAsUser: 1000
