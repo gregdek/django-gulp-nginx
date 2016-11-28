@@ -4,6 +4,7 @@ DJANGO_RPM_DEPS:
   - python-devel
   - gcc
   - python-virtualenv
+  - ansible
 DJANGO_USER: django
 DJANGO_ROOT: /django
 DJANGO_VENV: /venv

@@ -1,0 +1,14 @@
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    DJANGO_VENV: "{{ lookup('env', 'DJANGO_VENV') }}"
+    DJANGO_ROOT: "{{ lookup('env', 'DJANGO_ROOT') }}"
+  tasks: 
+  - name: Wait for the database to come up...
+    wait_for: host=postgresql port=5432 delay=10 timeout=120
+
+  - name: Apply database migrations
+    command: "{{ DJANGO_VENV }}/bin/python manage.py migrate --noinput"
+    args:
+      chdir: "{{ DJANGO_ROOT }}"
