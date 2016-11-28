@@ -6,6 +6,6 @@ dist/
 .v8flags*
 .bash_history
 ansible/roles/django-gulp-nginx-openshift/
-ansible/roles/django-gulp-nginx-kube/
+ansible/roles/django-gulp-nginx-kubernetes/
 ansible/shipit-openshift.yml
-ansible/shipit-kube.yml
+ansible/shipit-kubernetes.yml

@@ -21,14 +21,16 @@ build_from_scratch: clean
 	-docker volume rm ansible_postgres-data
 	ansible-container build	
 
+build_debug:
+	@./ansible/clean.sh containers 
+	-docker volume rm ansible_postgres-data
+	ansible-container --debug build
+
 run:
 	ansible-container run
 
 run_prod:
 	ansible-container run --production
-
-push:
-	ansible-container push --push-to http://hub.10.2.2.2/${project_name}
 
 stop:
 	ansible-container stop
