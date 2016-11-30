@@ -25,7 +25,7 @@ services:
     links:
     - postgresql
     user: '{{ DJANGO_USER }}'
-    command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/gunicorn', -w, '2', -b, '0.0.0.0:{{ DJANGO_PORT }}', 'example.wsgi:application']
+    command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/gunicorn', -w, '2', -b, '0.0.0.0:{{ DJANGO_PORT }}', 'project.wsgi:application']
     entrypoint: [/usr/bin/entrypoint.sh]
     dev_overrides:
       command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/python', manage.py, runserver, '0.0.0.0:{{ DJANGO_PORT }}']
