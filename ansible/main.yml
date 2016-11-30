@@ -8,7 +8,9 @@
 
 - hosts: nginx
   roles:
-  - role: j00bar.nginx-container
+  - role: chouseknecht.nginx-container-1
     ASSET_PATHS:
     - /tmp/django/static/
     - /tmp/gulp/node/dist/
+    PROXY_DJANGO: yes 
+    PROXY_DJANGO_PASS: "http://django:8080/"

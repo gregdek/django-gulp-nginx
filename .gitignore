@@ -1,4 +1,5 @@
 .idea/
+.npm/
 dist/
 *.retry
 *.pyc

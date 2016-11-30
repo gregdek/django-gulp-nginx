@@ -1,6 +1,6 @@
 project_name = $(shell basename $$PWD) 
 
-.PHONY: build build_from_scratch composer console clean demo run push stop
+.PHONY: build build_from_scratch build_debug clean run run_detached run_prod stop
 
 composer:
 	docker exec -i -t ansible_symfony_1 /symfony/ansible/composer.sh $(filter-out $@, $(MAKECMDGOALS)) 
@@ -18,7 +18,6 @@ build:
 	ansible-container build
 
 build_from_scratch: clean
-	-docker volume rm ansible_postgres-data
 	ansible-container build	
 
 build_debug:
@@ -29,8 +28,11 @@ build_debug:
 run:
 	ansible-container run
 
+run_detached:
+	ansible-container run -d
+
 run_prod:
-	ansible-container run --production
+	ansible-container run -d --production
 
 stop:
 	ansible-container stop
