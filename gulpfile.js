@@ -17,7 +17,10 @@ const rollup   = require('rollup')
 const babel    = require('rollup-plugin-babel')
 const commonjs = require('rollup-plugin-commonjs')
 const resolve  = require('rollup-plugin-node-resolve')
-const uglify   = require('rollup-plugin-uglify')
+const uglify   = require('gulp-uglify')
+const concat   = require('gulp-concat')
+const proxy    = require('http-proxy-middleware')
+const ngAnnotate = require('gulp-ng-annotate')
 
 // error handler
 
@@ -33,16 +36,26 @@ const onError = function(error) {
 
 // clean
 
-gulp.task('clean', function() {del('dist')})
+gulp.task('clean', function() {
+   del([
+     'dist/fonts/**',
+     'dist/images/**',
+     'dist/js/**',
+     'dist/lib/**',
+     'dist/templates/**',
+     'dist/videos/**',
+     'dist/favicon.ico'     
+   ])
+})
 
 // html
 
 gulp.task('html', ['images'], function() {
-  return gulp.src('src/html/**/*.html')
+  return gulp.src('src/templates/**/*.html')
     .pipe(plumber({ errorHandler: onError }))
     .pipe(include({ prefix: '@', basepath: 'dist/images/' }))
     .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
-    .pipe(gulp.dest('dist'))
+    .pipe(gulp.dest('dist/templates'))
 })
 
 // sass
@@ -59,39 +72,58 @@ gulp.task('sass', function() {
     .pipe(sass())
     .pipe(postcss(processors))
     .pipe(maps.write('./maps', { addComment: false }))
-    .pipe(gulp.dest('dist'))
+    .pipe(gulp.dest('dist/'))
 })
 
 // js
 
-const read = {
-  entry: 'src/js/main.js',
-  sourceMap: true,
-  plugins: [
-    resolve({ jsnext: true, main: true }),
-    commonjs(),
-    babel({ exclude: 'node_modules/**' }),
-    uglify()
-  ]
-}
+//const read = {
+//    entry: 'src/js/**/*.js',
+//    sourceMap: true,
+//    plugins: [
+//        resolve({ jsnext: true, main: true }),
+//        commonjs(),
+//        babel({ exclude: 'node_modules/**' }),
+//        uglify()
+//    ]
+//}
+//
+//const write = {
+//    format: 'iife',
+//    sourceMap: true
+//}
+//
+//gulp.task('js', function() {
+//  return rollup
+//    .rollup(read)
+//    .then(function(bundle) {
+//        // generate the bundle
+//        const files = bundle.generate(write)
+//        // write the files to dist
+//        fs.writeFileSync('dist/demo.min.js', files.code)
+//        fs.writeFileSync('dist/maps/demo.min.js.map', files.map.toString())
+//    })
+//})
 
-const write = {
-  format: 'iife',
-  sourceMap: true
-}
-
-gulp.task('js', function() {
-  return rollup
-    .rollup(read)
-    .then(function(bundle) {
-      // generate the bundle
-      const files = bundle.generate(write)
-
-      // write the files to dist
-      fs.writeFileSync('dist/bundle.js', files.code)
-      fs.writeFileSync('dist/maps/bundle.js.map', files.map.toString())
-    })
+gulp.task('clean-js', function() {
+    del(['dist/js/**'])
 })
+
+gulp.task('js', ['clean-js'], function() {
+    return gulp.src('src/js/**/*.js')
+        .pipe(maps.init())
+        .pipe(concat('demo.min.js'))
+        .pipe(uglify())
+        .pipe(maps.write())
+        .pipe(gulp.dest('dist/js'));
+})
+
+//gulp.task('js', function () {
+//  return gulp.src('src/js/**/*.js')
+//    .pipe(ngAnnotate())
+//    .pipe(uglify())
+//    .pipe(gulp.dest('dist/js/'));
+//});
 
 // images
 
@@ -118,7 +150,11 @@ const others = [
     name: 'favicon',
     src:  '/favicon.ico',
     dest: ''
-  }
+  }, {
+    name: 'lib',
+    src: '/lib/**/*',
+    dest: '/lib'
+  } 
 ]
 
 others.forEach(function(object) {
@@ -145,21 +181,30 @@ const sendMaps = function(req, res, next) {
   return next()
 }
 
-const options = {
-  notify: false,
-  proxy: 'django:8080',
-  watchOptions: {
-    ignored: '*.map'
-  },
-  port: 8080
-}
+gulp.task('server', function() {
+    var target_url = 'http://django:8080'
+    var proxyPages = proxy('/',    {target: target_url, xfwd: true})
 
-gulp.task('server', function() {sync(options)})
+    // var staticProxy = proxy('/static', {target: target_url, xfwd: true})
+    // var adminProxy  = proxy('/admin',  {target: target_url, xfwd: true})
+
+    sync({
+        notify: false, 
+        port: 8080,
+        watchOptions: {
+            ignored: '*.map'
+        },
+        server: {
+            baseDir: "dist",
+            middleware: [proxyPages]
+        }
+    });
+})
 
 // watch
 
 gulp.task('watch', function() {
-  gulp.watch('src/html/**/*.html', ['html', reload])
+  gulp.watch('src/templates/**/*.html', ['html', reload])
   gulp.watch('src/sass/**/*.scss', ['sass', reload])
   gulp.watch('src/js/**/*.js', ['js', reload])
   gulp.watch('src/images/**/*.{gif,jpg,png,svg}', ['images', reload])
@@ -183,7 +228,7 @@ gulp.task('build', ['clean'], function() {
 
 
   // run the tasks
-  gulp.start('html', 'sass', 'js', 'images', 'fonts', 'videos', 'favicon')
+  gulp.start('html', 'sass', 'js', 'images', 'fonts', 'videos', 'favicon', 'lib')
 })
 
 gulp.task('default', ['build', 'server', 'watch'])

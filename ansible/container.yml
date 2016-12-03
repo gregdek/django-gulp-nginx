@@ -12,25 +12,28 @@ defaults:
   NODE_ROOT: ''
   GULP_DEV_PORT: 8080
 services:
-
+  
   django:
     image: centos:7
     environment:
-      DATABASE_URL: "pgsql://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@postgresql:5432/{{ POSTGRES_DB }}"
-      DJANGO_ROOT: "{{ DJANGO_ROOT }}"  
-      DJANGO_VENV: "{{ DJANGO_VENV }}"  
+      DATABASE_URL: pgsql://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@postgresql:5432/{{
+        POSTGRES_DB }}
+      DJANGO_ROOT: '{{ DJANGO_ROOT }}'
+      DJANGO_VENV: '{{ DJANGO_VENV }}'
     expose:
     - '{{ DJANGO_PORT }}'
     working_dir: '{{ DJANGO_ROOT }}'
     links:
     - postgresql
     user: '{{ DJANGO_USER }}'
-    command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/gunicorn', -w, '2', -b, '0.0.0.0:{{ DJANGO_PORT }}', 'project.wsgi:application']
+    command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/gunicorn', -w, '2', -b, '0.0.0.0:{{
+        DJANGO_PORT }}', 'project.wsgi:application']
     entrypoint: [/usr/bin/entrypoint.sh]
     dev_overrides:
-      command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/python', manage.py, runserver, '0.0.0.0:{{ DJANGO_PORT }}']
+      command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/python', manage.py, runserver,
+        '0.0.0.0:{{ DJANGO_PORT }}']
       volumes:
-      - "$PWD:{{ DJANGO_ROOT }}"
+      - $PWD:{{ DJANGO_ROOT }}
       depends_on:
       - postgresql
 
@@ -41,14 +44,14 @@ services:
   gulp:
     image: centos:7
     user: '{{ NODE_USER }}'
-    command: /bin/false
+    working_dir: '{{ NODE_HOME }}'
+    command: ['/bin/false']
+    volumes:
+    - $PWD:{{ NODE_HOME }}
     dev_overrides:
-      working_dir: '{{ NODE_HOME }}'
       command: [/usr/bin/dumb-init, '{{ NODE_ROOT }}/node_modules/.bin/gulp']
       ports:
-      - "8080:{{ GULP_DEV_PORT }}"
-      volumes:
-      - "$PWD:{{ NODE_HOME }}"
+      - 8080:{{ GULP_DEV_PORT }}
       links:
       - django
 
@@ -75,7 +78,7 @@ services:
         runAsUser: 1000 
 
   postgresql:
-    image: openshift/postgresql-92-centos7 
+    image: openshift/postgresql-92-centos7
     environment:
     - POSTGRESQL_DATABASE={{ POSTGRES_DB }}
     - POSTGRESQL_USER={{ POSTGRES_USER }}
@@ -88,10 +91,10 @@ services:
     options:
       openshift:
         persistent_volume_claims:
-          - volume_name: postgres-data
-            claim_name: postgres-data
-            access_modes:
-              - ReadWriteMany
+        - volume_name: postgres-data
+          claim_name: postgres-data
+          access_modes:
+          - ReadWriteMany
 
 registries: {}
 

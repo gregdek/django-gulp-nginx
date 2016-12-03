@@ -83,16 +83,18 @@ stop
 
 ## Deploying the demo to OpenShift
 
-We can also use this app to demonstrate how easy it is to deploy an Ansible Container project to OpenShift. Before deploying you'll need the following:
+This app can also be used to demonstrate how easy it is to deploy an Ansible Container project to OpenShift. 
+
+Before running the deployment you'll need the following:
 
 - The images for this project built locally
 - Access to an OpenShift instance
 
 ### Building the images locally
 
-To run the demo project on OpenShift you'll first need to build the images locally. If you already completed the steps above in *Running the demo locally* and you didn't remove the images, you can skip this part. 
+To run the demo project on OpenShift you'll first need to build the images locally. If you already completed the steps above in *Running the demo locally*, and you didn't remove the images, you can skip this part. 
 
-Here's how to build the images:
+If you need to build the images, here's how:
 
 ```
 # Create a demo directory
@@ -110,7 +112,36 @@ $ ansible-container build
 
 ### Creating a local OpenShift instance
 
-If you do not have access to an OpenShift image, follow our [guide to creating an OpenShift instance](http://docs.ansible.com/ansible-container/configure_openshift.html). It's not as scary as it may sound. Within a few minutes you'll have OpenShift running in Docker containers in your dev environment.
+If you do not have access to an OpenShift instance, follow our [guide to creating an OpenShift instance](http://docs.ansible.com/ansible-container/configure_openshift.html). It's not as scary as it may sound. Within a few minutes you'll have OpenShift running in Docker containers in your dev environment.
 
-### 
- 
+### Running the deploymnet
+
+You should now have the images built locally and a running OpenShift instance. The next step is to create a new project *django-gulp-nginx*, and push the images to the project registry. Run the following commands, replacing the IP address of the registry with your IP:
+
+```
+# Create an OpenShift project that matches the local project name 
+$ oc new-project django-gulp-nginx
+
+# Push images to the OpenShift registry
+$ ansible-container push --push-to https//192.168.30.14.xip.io/django-gulp-nginx
+``` 
+
+Next, generate the deployment playbook and role by runnint the following, again replacing the IP address of the registry with the correct IP for your environment:
+
+```
+# Generate the deployment playbook and role
+$ ansible-playbook shipit openshift --pull-from https//192.168.30.14.xip.io/django-gulp-nginx
+```
+
+And finally, run the playbook by executing the following:
+
+```
+# Set the working directory to ansible
+$ cd ansible
+
+# Execute the playbook
+$ ansible-playbook shipit-openshift.yml 
+```
+
+
+

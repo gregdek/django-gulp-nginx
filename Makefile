@@ -1,6 +1,6 @@
 project_name = $(shell basename $$PWD) 
 
-.PHONY: build build_from_scratch build_debug clean run run_detached run_prod stop
+.PHONY: build build_from_scratch build_debug clean run run_detached run_prod stop django_manage django_exec gulp_build
 
 composer:
 	docker exec -i -t ansible_symfony_1 /symfony/ansible/composer.sh $(filter-out $@, $(MAKECMDGOALS)) 
@@ -28,6 +28,9 @@ build_debug:
 run:
 	ansible-container run
 
+run_debug:
+	ansible-container --debug run
+
 run_detached:
 	ansible-container run -d
 
@@ -36,3 +39,15 @@ run_prod:
 
 stop:
 	ansible-container stop
+
+django_manage:
+	@docker exec -it ansible_django_1 manage_django.sh $(filter-out $@,$(MAKECMDGOALS))
+
+django_exec:
+	@docker exec -it ansible_django_1 /bin/bash
+
+gulp_build:
+	@docker exec -it ansible_gulp_1 /node/scripts/gulp_build.sh
+
+%:      
+	@:
