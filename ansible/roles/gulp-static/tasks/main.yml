@@ -13,18 +13,13 @@
     createhome: yes
     home: "{{ NODE_HOME }}/"
 
-- name: Make sure node owns its working dir
-  file:
-    name: "{{ NODE_HOME }}/"
-    state: directory
-    owner: "{{ NODE_USER }}"
-    recurse: true
-
 - name: Make node_modules directory
   file:
     name: /node_modules
     state: directory
     owner: "{{ NODE_USER }}"
+    group: root 
+    mode: 0775
 
 - name: Install nodejs
   yum:
