@@ -13,14 +13,10 @@ const postcss  = require('gulp-postcss')
 const sass     = require('gulp-sass')
 const maps     = require('gulp-sourcemaps')
 const notifier = require('node-notifier')
-const rollup   = require('rollup')
-const babel    = require('rollup-plugin-babel')
-const commonjs = require('rollup-plugin-commonjs')
-const resolve  = require('rollup-plugin-node-resolve')
 const uglify   = require('gulp-uglify')
 const concat   = require('gulp-concat')
 const proxy    = require('http-proxy-middleware')
-const ngAnnotate = require('gulp-ng-annotate')
+const util     = require('gulp-util')
 
 // error handler
 
@@ -77,34 +73,6 @@ gulp.task('sass', function() {
 
 // js
 
-//const read = {
-//    entry: 'src/js/**/*.js',
-//    sourceMap: true,
-//    plugins: [
-//        resolve({ jsnext: true, main: true }),
-//        commonjs(),
-//        babel({ exclude: 'node_modules/**' }),
-//        uglify()
-//    ]
-//}
-//
-//const write = {
-//    format: 'iife',
-//    sourceMap: true
-//}
-//
-//gulp.task('js', function() {
-//  return rollup
-//    .rollup(read)
-//    .then(function(bundle) {
-//        // generate the bundle
-//        const files = bundle.generate(write)
-//        // write the files to dist
-//        fs.writeFileSync('dist/demo.min.js', files.code)
-//        fs.writeFileSync('dist/maps/demo.min.js.map', files.map.toString())
-//    })
-//})
-
 gulp.task('clean-js', function() {
     del(['dist/js/**'])
 })
@@ -113,17 +81,11 @@ gulp.task('js', ['clean-js'], function() {
     return gulp.src('src/js/**/*.js')
         .pipe(maps.init())
         .pipe(concat('demo.min.js'))
-        .pipe(uglify())
+        .pipe(uglify().on('error', util.log))
         .pipe(maps.write())
         .pipe(gulp.dest('dist/js'));
 })
 
-//gulp.task('js', function () {
-//  return gulp.src('src/js/**/*.js')
-//    .pipe(ngAnnotate())
-//    .pipe(uglify())
-//    .pipe(gulp.dest('dist/js/'));
-//});
 
 // images
 
@@ -135,7 +97,7 @@ gulp.task('images', function() {
     .pipe(gulp.dest('dist/images'))
 })
 
-// fonts, videos, favicon
+// fonts, videos, favicon, lib
 
 const others = [
   {
@@ -189,7 +151,8 @@ gulp.task('server', function() {
     // var adminProxy  = proxy('/admin',  {target: target_url, xfwd: true})
 
     sync({
-        notify: false, 
+        notify: false,
+        open: false,
         port: 8080,
         watchOptions: {
             ignored: '*.map'

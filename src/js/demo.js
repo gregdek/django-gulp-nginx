@@ -8,7 +8,8 @@
         'demo.authentication',
         'demo.layout',
         'demo.utils',
-        'demo.posts'
+        'demo.posts',
+        'demo.profiles'
     ]);
 
     angular.module('demo').run(run);

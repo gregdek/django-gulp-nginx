@@ -2,12 +2,6 @@ project_name = $(shell basename $$PWD)
 
 .PHONY: build build_from_scratch build_debug clean run run_detached run_prod stop django_manage django_exec gulp_build
 
-composer:
-	docker exec -i -t ansible_symfony_1 /symfony/ansible/composer.sh $(filter-out $@, $(MAKECMDGOALS)) 
-
-console:
-	docker exec -i -t ansible_symfony_1 /symfony/ansible/console.sh $(filter-out $@, $(MAKECMDGOALS)) 
-
 clean:
 	@./ansible/clean.sh all
 	docker volume rm ansible_postgres-data
