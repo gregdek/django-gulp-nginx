@@ -25,6 +25,7 @@
     "bower":                      "*",
     "gulp-concat":                "*",
     "gulp-uglify":                "^1.0.1",
-    "gulp-util":                  "*"
+    "gulp-util":                  "*",
+    "connect-history-api-fallback": "^1.1.0"
   }
 }

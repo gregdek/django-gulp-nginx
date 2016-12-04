@@ -18,6 +18,12 @@
         var vm = this;
 
         vm.logout = logout;
+        vm.isAuthenticated = Authentication.isAuthenticated;
+
+        vm.username = "";
+        if (vm.isAuthenticated()) {
+            vm.username = Authentication.getAuthenticatedAccount().username;
+        }
 
         /**
          * @name logout

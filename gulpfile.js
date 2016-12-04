@@ -17,6 +17,7 @@ const uglify   = require('gulp-uglify')
 const concat   = require('gulp-concat')
 const proxy    = require('http-proxy-middleware')
 const util     = require('gulp-util')
+const history  = require('connect-history-api-fallback')
 
 // error handler
 
@@ -33,7 +34,7 @@ const onError = function(error) {
 // clean
 
 gulp.task('clean', function() {
-   del([
+   return del([
      'dist/fonts/**',
      'dist/images/**',
      'dist/js/**',
@@ -54,6 +55,14 @@ gulp.task('html', ['images'], function() {
     .pipe(gulp.dest('dist/templates'))
 })
 
+gulp.task('index', function() {
+  return gulp.src('src/index.html')
+    .pipe(plumber({ errorHandler: onError }))
+    .pipe(include({ prefix: '@', basepath: 'dist/images/' }))
+    .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
+    .pipe(gulp.dest('dist/'))
+})
+
 // sass
 
 const processors = [
@@ -62,7 +71,7 @@ const processors = [
 ]
 
 gulp.task('sass', function() {
-  return gulp.src('src/sass/style.scss')
+  return gulp.src('src/sass/styles.scss')
     .pipe(plumber({ errorHandler: onError }))
     .pipe(maps.init())
     .pipe(sass())
@@ -74,7 +83,7 @@ gulp.task('sass', function() {
 // js
 
 gulp.task('clean-js', function() {
-    del(['dist/js/**'])
+    return del(['dist/js/**'])
 })
 
 gulp.task('js', ['clean-js'], function() {
@@ -145,10 +154,9 @@ const sendMaps = function(req, res, next) {
 
 gulp.task('server', function() {
     var target_url = 'http://django:8080'
-    var proxyPages = proxy('/',    {target: target_url, xfwd: true})
 
-    // var staticProxy = proxy('/static', {target: target_url, xfwd: true})
-    // var adminProxy  = proxy('/admin',  {target: target_url, xfwd: true})
+    var proxyAdmin= proxy('/admin', {target: target_url, xfwd: true})
+    var proxyAPI=   proxy('/api',   {target: target_url, xfwd: true})
 
     sync({
         notify: false,
@@ -158,8 +166,12 @@ gulp.task('server', function() {
             ignored: '*.map'
         },
         server: {
-            baseDir: "dist",
-            middleware: [proxyPages]
+            baseDir: 'dist',
+            index:   'index.html',
+            routes: {
+                '/static': 'dist' 
+            },
+            middleware: [proxyAdmin, proxyAPI, history()]
         }
     });
 })
@@ -167,6 +179,7 @@ gulp.task('server', function() {
 // watch
 
 gulp.task('watch', function() {
+  gulp.watch('src/index.html',['index', reload])
   gulp.watch('src/templates/**/*.html', ['html', reload])
   gulp.watch('src/sass/**/*.scss', ['sass', reload])
   gulp.watch('src/js/**/*.js', ['js', reload])
@@ -191,7 +204,7 @@ gulp.task('build', ['clean'], function() {
 
 
   // run the tasks
-  gulp.start('html', 'sass', 'js', 'images', 'fonts', 'videos', 'favicon', 'lib')
+  gulp.start('html', 'sass', 'js', 'images', 'fonts', 'videos', 'favicon', 'lib', 'index')
 })
 
 gulp.task('default', ['build', 'server', 'watch'])

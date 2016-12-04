@@ -21,6 +21,11 @@
     group: root 
     mode: 0775
 
+- name: Remove contents of dist directory
+  command: rm -rf dist/*
+  args:
+    chdir: "{{ NODE_HOME }}"
+
 - name: Install nodejs
   yum:
     name: "{{ item }}" 
@@ -31,8 +36,8 @@
 
 - name: Copy source
   synchronize:
-    src: "{{ lookup('pipe','dirname `pwd`') }}/"
-    dest: "{{ NODE_HOME }}/"
+    src: /tmp/static/
+    dest: "{{ NODE_HOME }}/dist/"
   remote_user: "{{ NODE_USER }}"
 
 - name: Symlink package.json
@@ -85,3 +90,4 @@
     dest: /tmp/static
     mode: pull
   remote_user: "{{ NODE_USER }}"
+

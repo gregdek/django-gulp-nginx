@@ -46,12 +46,15 @@ services:
     user: '{{ NODE_USER }}'
     working_dir: '{{ NODE_HOME }}'
     command: ['/bin/false']
+    environment:
+      NODE_HOME: '{{ NODE_HOME }}'
     volumes:
-    - $PWD:{{ NODE_HOME }}
+      - $PWD:{{ NODE_HOME }}
     dev_overrides:
-      command: [/usr/bin/dumb-init, '{{ NODE_ROOT }}/node_modules/.bin/gulp']
+      command: [/usr/bin/dumb-init, /usr/bin/gulp]
       ports:
       - 8080:{{ GULP_DEV_PORT }}
+      - 3001:3001
       links:
       - django
 

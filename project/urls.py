@@ -24,8 +24,8 @@ urlpatterns = [
     url(r'^api/v1/', include(accounts_router.urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url('^.*$', IndexView.as_view(), name='index'),
+    # url('^.*$', IndexView.as_view(), name='index'),
 ]
 
-urlpatterns += static('/static', document_root='/django/dist')
+# urlpatterns += static('/static', document_root='/django/dist')
 

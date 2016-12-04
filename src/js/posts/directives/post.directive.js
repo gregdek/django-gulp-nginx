@@ -23,7 +23,7 @@
       scope: {
         post: '='
       },
-      templateUrl: '/static/templates/posts/post.html'
+      templateUrl: 'templates/posts/post.html'
     };
 
     return directive;

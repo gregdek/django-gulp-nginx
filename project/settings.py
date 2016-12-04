@@ -20,6 +20,8 @@ AUTH_USER_MODEL = 'authentication.Account'
 
 USE_X_FORWARDED_HOST = True
 
+APPEND_SLASH = True
+
 # Application definition
 
 INSTALLED_APPS = (
