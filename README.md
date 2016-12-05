@@ -2,35 +2,32 @@
 
 [![Build Status](https://travis-ci.org/chouseknecht/django-gulp-nginx.svg?branch=master)](https://travis-ci.org/chouseknecht/django-gulp-nginx)
 
-Simple Django web application to demo [Ansible Container](https://github.com/ansible/ansible-container).
+A web application built using [Ansible Container](https://github.com/ansible/ansible-container). The application includes 
+restful API backend built with Django, and a single page application (SPA) on the frontend built with AngularJS. Together they 
+ombine to create a simplistic social media app called *Not Goolge Plus*, where you can register, update your profile, and share 
+your thoughts with the world. 
 
-Ansible Container makes it possible to build container images using Ansible Playbooks rather than Dockerfile, and
-provides the tools you need to manage the complete container lifecycle from development to deployment.
-
-With Ansible Container you get: 
-
-- Tools you already know: Ansible and Docker Compose
-- Highly reusable code by way of Ansible roles
-- Easy to read and understand image build instructions contained in an playbook
-- Repeatable and testable image build process
-- A single orchestration document with settings for development and production
-- Auto-generated deployment role and playbook  
+To view the demo start by setting up your development environment. Later, after you've made some changes, run the application in 
+testing mode, and finally deploy your changes to the cloud using a local OpenShift instance. The application may sound simple, but 
+it incorporates the architecture and tools typical of a modern web app, allowing you to see first hand how Ansible Container makes 
+it easy to manage a containerized app through the full lifecycle.
 
 ## Requirements
 
-[Ansible Container](https://github.com/ansible/ansible-container)
+Before you can see the demo live, in your development environment, you'll need a couple things:
 
-Ansible Container requires access to a running Docker Engine or Docker Machine. For help with the installation, see
-our [installation guide](http://docs.ansible.com/ansible-container/installation.html).
+ - Ansible Container installed from source. See our [Running from source guide](http://docs.ansible.com/ansible-container/installation.html#running-from-source) for assistance.  
+ - Docker Engine or Docker for Mac.
 
+## Getting Started
 
-## Running the demo locally 
+### Copy the project
 
-To run this app locally, create a project directory, and initialize it using Ansible Container. Pass the name of this
-project to the `init` command, and you'll instantly have a ready-to-go application:
+To get started, use the Ansible Container `init` command to create a local copy of this project. In a terminal window, run the 
+following commands to create your copy: 
 
 ```
-# Create a demo directory
+# Create a directory called 'demo'
 $ mkdir demo
 
 # Set the working directory to demo
@@ -40,17 +37,110 @@ $ cd demo
 $ ansible-container init chouseknecht.django-gulp-nginx 
 ```
 
-Now from your project directory build the images:
+You now have a copy of the project in a directory called *demo*. Inside *demo/ansible* you'll find a `container.yml` file 
+describing in Docker Compose the services that make up the application, and an Ansible playbook called `main.yml` file that contains 
+a set of plays for building the application images. 
+
+### Build the images
+
+To run the application you first need to build the images. Start the build by running the following command:
 
 ```
 $ ansible-container build
 ```
+The build process launches a container for each service along with a build container. For each service container, the base image is the 
+image specified in `container.yml`. The build container runs the `main.yml` playbook, and executes tasks on each of the containers. You'll 
+see output from the playbook run in your terminal window as it progresses through the tasks. When the playbook completes, each image will
+be `committed`, creating a new set of base images.
 
-And finally, from your project directory run the app:
+When execution stops, use the `docker images` command to view the set of images:
+
+```
+
+
+```
+
+### Run the application
+
+Now that you have the application images in your environent, you can run th application and log into *Not Google Plus*. Run the following
+command to start the application:
 
 ```
 $ ansible-container run
 ```
+You should now see the output from each container streaming in your terminal window. The containers are running in the foreground. They are
+running in *development mode*, which means that for each service the *dev_overrides* directive is being included in the configuration. For example,
+take a look at the *gulp* service definition found in `container.yml`:
+
+```
+  gulp:
+    image: centos:7
+    user: '{{ NODE_USER }}'
+    working_dir: '{{ NODE_HOME }}'
+    command: ['/bin/false']
+    environment:
+      NODE_HOME: '{{ NODE_HOME }}'
+    volumes:
+      - "${PWD}:{{ NODE_HOME }}"
+    dev_overrides:
+      command: [/usr/bin/dumb-init, /usr/bin/gulp]
+      ports:
+      - 8080:{{ GULP_DEV_PORT }}
+      - 3001:3001
+      links:
+      - django
+    options:
+      kube:
+        state: absent
+      openshift:
+        state: absent
+```
+
+In development *dev_overrides* takes precedence, so the command ``/usr/bin/dumb-init /usr/bin/gulp* will be executed, ports 8080 and 3001 
+will be exposed, and the container will be linked to the *django* service container.
+
+If you were to tun the *gulp* service in production, *dev_overrides* would be ignored completely. In production the ``/bin/false`` command will be executed, 
+causing the container to immediately stop. No ports would be exposed, and the container would not be linked to the django container.
+
+Since the frontend tools gulp and browsersync are only needed during development and not during production, we use *dev_overrides* to manage 
+when the container executes.
+
+The same is true for the nginx service. Take a look at the service definition in `container.yml`, and you'll notice it's configured opposite of 
+the gulp service:
+
+```
+  nginx:
+    image: centos:7
+    ports:
+    - {{ DJANGO_PORT }}:8000
+    user: nginx
+    links:
+    - django
+    command: ['/usr/bin/dumb-init', 'nginx', '-c', '/etc/nginx/nginx.conf']
+    dev_overrides:
+      ports: []
+      command: /bin/false
+    options:
+      kube:
+        runAsUser: 1000
+```
+
+In development the nginx service runs the ``/bin/false`` command, and immediately exits. But in production it starts the 
+``nginx`` process, and takes the place of the gulp service as the application's web server.
+
+## Log in and share your thoughts
+
+Now that you have the application running, lets check it out!
+
+### Register
+
+Click the *Register* link at the top right, and complete the form to create your account.
+
+
+
+
+
+
 
 ### Rebuilding images
 
@@ -75,7 +165,7 @@ run
 run_detached
 > Run the demo in development mode in the background.
 
-run_prod
+run_pdrod
 > Run the demo in production mode in the background. This will cause the gulp container to stop and the nginx container to run. Useful for testing how the app will behave when deployed to Kubernetes or OpenShift.
 
 stop
