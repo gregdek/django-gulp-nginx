@@ -22,8 +22,10 @@ script:
   - ansible-container run -d
   - docker ps -a
   - docker images
-  - cd test && ansible-playbook -i inventory test.yml
-  - cd .. && ansible-container stop -f
+  - cd test
+  - ansible-playbook -i inventory test.yml
+  - cd ..
+  - ansible-container stop -f
 
 notifications:
   email: false
