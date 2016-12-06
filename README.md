@@ -4,7 +4,7 @@
 
 A web application built and managed with [Ansible Container](https://github.com/ansible/ansible-container).
 
-The application includes a Django rest API on the backend, and an AngularJS single page application (SPA) on the frontend. Together they combine to create a simple social media app called *Not Goolge Plus*, where you can register, update your profile, and share your thoughts with the world. 
+The application includes a Django rest API on the backend, and an AngularJS single page application (SPA) on the frontend. Together they combine to create a simple social media app called *Not Google Plus*, where you can register, update your profile, and share your thoughts with the world. 
 
 To view the demo start by setting up your development environment. Later, after you've made some changes, test the application in production mode, and finally deploy your changes to the cloud using a local OpenShift instance.
 
@@ -80,7 +80,7 @@ Now that you have the application images built in your environent, you can launc
 # Launch the demo
 $ ansible-container run
 ```
-You should now see the output from each container streaming in your terminal window. The containers are running in the foreground, and they are running in *development mode*, which means that for each service the *dev_overrides* directive is being included in the configuration. For example, take a look at the *gulp* service definition found in `container.yml`:
+You should now see the output from each container streaming in your terminal window. The containers are running in the foreground, and by default they are running in *development mode*, which means that for each service the *dev_overrides* directive is being included in the configuration. For example, take a look at the *gulp* service definition found in `container.yml`:
 
 ```
   gulp:
@@ -146,11 +146,11 @@ Click the image below to watch the video:
 
 Once you're finished, you can press `ctrl-c` to kill the containers. This will signal Docker to kill the processes running inside the containers, and shut the containers down. This works when the containers are running in the foreground, streaming output to your terminal window.
 
-You can also run `ansible-container stop`. For containers running in the foreground, open a second terminal window, set the working directory to your *demo* project, and run the command. It will terminate all containers associated with the project, regardless wether they're running in the foreground or in the backgound.
+You can also run `ansible-container stop`. For containers running in the foreground, open a second terminal window, set the working directory to your *demo* project, and run the command. It will terminate all containers associated with the project, regardless of whether they're running in the foreground or in the backgound.
 
 ## Testing the application
 
-If you make code changes, and you want to test, you'll begin by building a fresh set of images that contain your code changes. During the build process the latest code gets added to the nginx image. So if you actually modified some code, go ahead and run the `build` command as follows, otherwise you can skip this step:
+If you make code changes, and you want to test, you'll begin by building a fresh set of images that contain your code changes. During the build process the latest code gets added to the nginx image. So if you actually modified some code, run the `build` command as follows (otherwise you can skip this step):
 
 ```
 # Start the build process
